@@ -73,7 +73,7 @@ private struct NICapabilities {
             return
         }
         supported = true
-        let caps = NISession().deviceCapabilities
+        let caps = NISession.deviceCapabilities
         preciseDistance = caps.supportsPreciseDistanceMeasurement
         direction = caps.supportsDirectionMeasurement
         cameraAssistance = caps.supportsCameraAssistance
