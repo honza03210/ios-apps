@@ -10,14 +10,17 @@ builds install over the air through the TestFlight app.
 ```
 .
 ├── apps/
-│   └── HelloTestFlight/             # example app (proves the pipeline)
-│       ├── project.yml              # XcodeGen config (name: HelloTestFlight)
-│       └── HelloTestFlight/         # sources
-│           ├── HelloTestFlightApp.swift
-│           ├── ContentView.swift
-│           ├── Info.plist
-│           ├── HelloTestFlight.entitlements
-│           └── Assets.xcassets/     # incl. 1024px AppIcon
+│   ├── HelloTestFlight/             # example app — title + tap counter
+│   │   ├── project.yml              # XcodeGen config (name: HelloTestFlight)
+│   │   └── HelloTestFlight/         # sources
+│   │       ├── HelloTestFlightApp.swift
+│   │       ├── ContentView.swift
+│   │       ├── Info.plist
+│   │       ├── HelloTestFlight.entitlements
+│   │       └── Assets.xcassets/     # incl. 1024px AppIcon
+│   └── ColorRoll/                   # second app — tap to cycle background color
+│       ├── project.yml              # name: ColorRoll
+│       └── ColorRoll/ …             # same shape as above
 └── .github/workflows/
     └── testflight.yml
 ```
@@ -74,13 +77,18 @@ over the air.
 2. Create the app record in App Store Connect with its bundle id.
 3. Push. The `discover` job finds it; the matrix builds and uploads it.
 
-## The example app
+## The example apps
 
-`HelloTestFlight` is a one-screen SwiftUI app (a title, subtitle, and a tap
-counter). It builds with no special capabilities, so it's the simplest possible
-proof that the discover → archive → upload pipeline works end to end. Once the
-secrets above are set and an app record exists for `com.example.hellotestflight`,
-pushing this repo uploads a build to TestFlight.
+- **`HelloTestFlight`** (`com.example.hellotestflight`) — a one-screen SwiftUI
+  app with a title, subtitle, and a tap counter.
+- **`ColorRoll`** (`com.example.colorroll`) — tap anywhere to cycle the
+  background color.
+
+Both build with no special capabilities, so together they're the simplest proof
+that the discover → archive → upload pipeline works end to end **and** that the
+matrix fans out across multiple apps: a push that changes both directories runs
+two macOS jobs in parallel, one per app. Each needs its own App Store Connect
+app record (matching its bundle id) before its upload will succeed.
 
 See `docs/ios-monorepo-testflight.md` (in the in-zone repo) for the full
 blueprint and the hard-won gotchas behind this setup.
