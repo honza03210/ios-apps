@@ -15,7 +15,6 @@ struct NearbyInteractionView: View {
                 CapabilityRow(label: "Precise distance (UWB)", on: caps.preciseDistance)
                 CapabilityRow(label: "Direction / angle-of-arrival", on: caps.direction)
                 CapabilityRow(label: "Camera assistance", on: caps.cameraAssistance)
-                CapabilityRow(label: "Extended distance", on: caps.extendedDistance)
             }
 
             Section("How a session works") {
@@ -64,12 +63,11 @@ private struct NICapabilities {
     let preciseDistance: Bool
     let direction: Bool
     let cameraAssistance: Bool
-    let extendedDistance: Bool
 
     init() {
         guard NISession.isSupported else {
             supported = false; preciseDistance = false; direction = false
-            cameraAssistance = false; extendedDistance = false
+            cameraAssistance = false
             return
         }
         supported = true
@@ -77,6 +75,5 @@ private struct NICapabilities {
         preciseDistance = caps.supportsPreciseDistanceMeasurement
         direction = caps.supportsDirectionMeasurement
         cameraAssistance = caps.supportsCameraAssistance
-        extendedDistance = caps.supportsExtendedDistanceMeasurement
     }
 }
