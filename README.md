@@ -69,6 +69,27 @@ Add yourself as an **internal tester** in App Store Connect → your app →
 TestFlight (no App Review needed). Install via the **TestFlight** app on device,
 over the air.
 
+## Unsigned builds for AltStore / SideStore
+
+Don't want to deal with App Store Connect at all? The **Unsigned IPA (AltStore)**
+workflow (`.github/workflows/unsigned.yml`) builds each app with code signing
+disabled and uploads the resulting **unsigned `.ipa`** as a workflow artifact —
+**no secrets, no Apple Developer Program, no app records needed**. AltStore (or
+SideStore) re-signs the IPA on-device with your own free Apple ID at install time.
+
+1. **Actions → Unsigned IPA (AltStore) → Run workflow.** Leave `app` as `all`,
+   or type one app's subdir name.
+2. When it finishes, open the run and download the **`<App>-unsigned-ipa`**
+   artifact (a zip containing the `.ipa`); unzip it.
+3. Install the `.ipa` with AltStore/SideStore (AltServer "Install app…", or drag
+   it into SideStore). It gets re-signed with a free provisioning profile.
+
+Caveats of the free-Apple-ID route (AltStore's, not this repo's): the app expires
+after **7 days** (AltStore refreshes it in the background), you're limited to
+**3 sideloaded apps** at once, and capabilities that require a paid account
+(e.g. some entitlements) won't work. For anything beyond casual sideloading, use
+the TestFlight workflow above.
+
 ## Adding a new app
 
 1. Create `apps/<Name>/project.yml` (project + target + scheme all named `<Name>`)

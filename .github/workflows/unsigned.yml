@@ -1,0 +1,101 @@
+name: Unsigned IPA (AltStore)
+
+# Builds an UNSIGNED .ipa for each app and uploads it as a workflow artifact.
+# No Apple credentials / secrets needed — AltStore (or SideStore) re-signs the
+# IPA on-device with your own free Apple ID when you install it.
+#
+# Manual only: Actions -> "Unsigned IPA (AltStore)" -> Run workflow.
+# Leave `app` as "all" to build every app, or type one app's subdir name.
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "App subdir to build (or 'all')"
+        default: all
+
+concurrency:
+  group: unsigned-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.list.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: list
+        run: |
+          all=$(for d in apps/*/project.yml; do basename "$(dirname "$d")"; done)
+          if [ "${{ inputs.app }}" != "all" ]; then
+            sel="${{ inputs.app }}"
+          else
+            sel="$all"
+          fi
+          json=$(printf '%s\n' $sel | grep . | jq -R . | jq -cs .)
+          echo "apps=$json" >> "$GITHUB_OUTPUT"
+          echo "Selected apps: $json"
+
+  build:
+    needs: discover
+    if: needs.discover.outputs.apps != '[]'
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.discover.outputs.apps) }}
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with: { xcode-version: latest-stable }
+
+      - name: Install tools
+        run: brew install xcodegen xcbeautify
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build unsigned .app
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project "${{ matrix.app }}.xcodeproj" \
+            -scheme "${{ matrix.app }}" \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify
+
+      - name: Package unsigned .ipa
+        run: |
+          set -euo pipefail
+          app_path="build/Build/Products/Release-iphoneos/${{ matrix.app }}.app"
+          if [ ! -d "$app_path" ]; then
+            echo "::error::Built app not found at $app_path"; exit 1
+          fi
+          rm -rf Payload "${{ matrix.app }}-unsigned.ipa"
+          mkdir Payload
+          cp -R "$app_path" Payload/
+          # An IPA is just a zip with the .app inside a top-level Payload/ dir.
+          zip -qry "${{ matrix.app }}-unsigned.ipa" Payload
+          rm -rf Payload
+          echo "Built unsigned IPA:"
+          ls -lh "${{ matrix.app }}-unsigned.ipa"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-unsigned-ipa
+          path: apps/${{ matrix.app }}/${{ matrix.app }}-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
