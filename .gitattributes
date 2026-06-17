@@ -1,0 +1,5 @@
+# Force LF for everything text so the workflow's bash blocks never get a
+# stray CR on macOS/Linux runners (a trailing \r breaks string comparisons).
+* text=auto eol=lf
+
+*.png binary
