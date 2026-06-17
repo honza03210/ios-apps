@@ -104,6 +104,12 @@ the TestFlight workflow above.
   app with a title, subtitle, and a tap counter.
 - **`ColorRoll`** (`com.example.colorroll`) — tap anywhere to cycle the
   background color.
+- **`Showcase`** (`com.example.showcase`) — a tour of iOS hardware & ML
+  capabilities, one screen each: TrueDepth face blendshapes, on-device speech
+  recognition, Vision hand/body pose, image classification, OCR, sound
+  classification, device-motion/barometer/pedometer, Core Haptics, Natural
+  Language, Bluetooth LE scan, Nearby Interaction (UWB) capabilities, NFC, and
+  Face ID. Needs a real device for most demos.
 
 Both build with no special capabilities, so together they're the simplest proof
 that the discover → archive → upload pipeline works end to end **and** that the

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Showcase</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+	</dict>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+
+	<!-- Usage strings: each demo needs the matching permission prompt. -->
+	<key>NSCameraUsageDescription</key>
+	<string>The Vision and TrueDepth demos use the camera to detect faces, hands, bodies, text, and objects on-device.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>The speech and sound-classification demos use the microphone to recognise speech and identify sounds on-device.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>The speech demo transcribes what you say, on-device.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>The motion demos read the accelerometer, gyroscope, barometer, and pedometer.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>The authentication demo uses Face ID / Touch ID to verify it's you.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>The Bluetooth demo scans for nearby Bluetooth Low Energy devices.</string>
+	<key>NSNearbyInteractionUsageDescription</key>
+	<string>The Nearby Interaction demo reports your device's Ultra Wideband (UWB) ranging capabilities.</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>The NFC demo reads nearby NFC tags.</string>
+</dict>
+</plist>
