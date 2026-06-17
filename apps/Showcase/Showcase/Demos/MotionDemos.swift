@@ -56,8 +56,11 @@ private struct BubbleLevel: View {
 }
 
 final class DeviceMotionModel: ObservableObject {
-    @Published var roll = 0.0, pitch = 0.0, yaw = 0.0
-    @Published var accel = "—", rotation = "—"
+    @Published var roll = 0.0
+    @Published var pitch = 0.0
+    @Published var yaw = 0.0
+    @Published var accel = "—"
+    @Published var rotation = "—"
 
     func start() {
         guard motionManager.isDeviceMotionAvailable else { return }
