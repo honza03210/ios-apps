@@ -1,0 +1,20 @@
+# XcodeGen output — generated in CI, never committed (avoids merge conflicts
+# and "future project format" breakage).
+*.xcodeproj/
+
+# Xcode / build artifacts
+DerivedData/
+build/
+*.xcarchive
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# macOS
+.DS_Store
+
+# Secrets — never commit signing material
+*.p8
+*.mobileprovision
+*.cer
+*.certSigningRequest

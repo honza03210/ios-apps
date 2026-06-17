@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- No special capabilities for this sample. Add Apple entitlement keys
+	     here (e.g. com.apple.developer.healthkit); automatic signing with
+	     -allowProvisioningUpdates registers them on the App ID for you. -->
+</dict>
+</plist>

@@ -1,0 +1,27 @@
+name: HelloTestFlight
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget: { iOS: "16.0" }
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1"          # iPhone
+    MARKETING_VERSION: "1.0.0"           # human version; bump per release
+targets:
+  HelloTestFlight:
+    type: application
+    platform: iOS
+    sources:
+      - path: HelloTestFlight
+        excludes: ["*.entitlements"]
+    settings:
+      base:
+        INFOPLIST_FILE: HelloTestFlight/Info.plist
+        CODE_SIGN_ENTITLEMENTS: HelloTestFlight/HelloTestFlight.entitlements
+        CODE_SIGN_STYLE: Automatic
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.hellotestflight
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+schemes:
+  HelloTestFlight:
+    build:
+      targets: { HelloTestFlight: all }

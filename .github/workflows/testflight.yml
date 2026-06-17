@@ -1,0 +1,118 @@
+name: TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "App subdir to build (or 'all')"
+        default: all
+  push:
+    branches: [main]
+    paths: ["apps/**"]
+
+concurrency:
+  group: testflight-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.list.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - id: list
+        run: |
+          all=$(for d in apps/*/project.yml; do basename "$(dirname "$d")"; done)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.app }}" != "all" ]; then
+            sel="${{ inputs.app }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            changed=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" 2>/dev/null \
+                      | grep '^apps/' | cut -d/ -f2 | sort -u)
+            sel=$(comm -12 <(echo "$all" | sort) <(echo "$changed" | sort))
+          else
+            sel="$all"
+          fi
+          json=$(printf '%s\n' $sel | grep . | jq -R . | jq -cs .)
+          echo "apps=$json" >> "$GITHUB_OUTPUT"
+          echo "Selected apps: $json"
+
+  testflight:
+    needs: discover
+    if: needs.discover.outputs.apps != '[]'
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.discover.outputs.apps) }}
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with: { xcode-version: latest-stable }
+
+      - name: Install tools
+        run: brew install xcodegen xcbeautify
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Write App Store Connect API key
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey.p8"
+
+      - name: Archive
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project "${{ matrix.app }}.xcodeproj" \
+            -scheme "${{ matrix.app }}" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/${{ matrix.app }}.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            | xcbeautify
+
+      - name: Export & upload to TestFlight
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          set -o pipefail
+          PLIST="$RUNNER_TEMP/ExportOptions.plist"
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="UTF-8"?>' \
+            '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
+            '<plist version="1.0"><dict>' \
+            '<key>method</key><string>app-store-connect</string>' \
+            '<key>destination</key><string>upload</string>' \
+            "<key>teamID</key><string>${TEAM_ID}</string>" \
+            '<key>signingStyle</key><string>automatic</string>' \
+            '</dict></plist>' > "$PLIST"
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/${{ matrix.app }}.xcarchive" \
+            -exportOptionsPlist "$PLIST" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            | xcbeautify
